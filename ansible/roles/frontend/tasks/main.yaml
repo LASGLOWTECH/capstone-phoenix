@@ -1,13 +1,13 @@
 # install frontend packages
 - name: install frontend packages
   apt:
-   name: "{{frontend_packages}}"
-  state: present
+    name: "{{ frontend_packages }}"
+    state: present
   tags: [packages, frontend]  
 
 - name: ensure web server is installed and running
   systemd:
-    name: "{{web_server_package}}"
+    name: nginx
     state: started
     enabled: yes
   tags: [services,frontend]
@@ -33,56 +33,64 @@
   # create appliation home directory
 - name: Create application home directory
   file:
-    path: /home/"{{app_user}}"
+    path: "/home/{{ app_user }}"
     state: directory
-    owner: "{{app_user}}"
-    group: "{{app_group}}"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
     mode: '0755'
   tags: [directories,frontend]
 
-  # create  the npm cache directory for the application and set permission
--  name: Create npm cache directory
-   file:
-      path: /home/"{{app_user}}"/.npm
-      state: directory
-      owner: "{{app_user}}"
-      group: "{{app_group}}"
-      mode: '0755'
-   tags: [directories,frontend]
+# create the npm cache directory for the application and set permission
+- name: Create npm cache directory
+  file:
+    path: "/home/{{ app_user }}/.npm"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0755'
+  tags: [directories,frontend]
 
   # clone the  frontend application repository
 - name: clone frontend application repository
   git: 
-      repo: "{{frontend_repo_url}}"
-      dest: "{{frontend_src_dir}}"
-      version: "{{frontend_branch}}"
-      force: yes
-      become_user: "{{app_user}}"
-      become: true
+    repo: "{{ frontend_repo_url }}"
+    dest: "{{ frontend_source_dir }}"
+    version: "{{ frontend_branch }}"
+    force: yes
+  become_user: "{{ app_user }}"
+  become: true
   tags: [git,deploy,frontend]
 
-  # create .env.production for the frontend
-  -name: create .env.production for the frontend
+# create .env.production for the frontend
+- name: create .env.production for the frontend
   copy:
-      dest: "{{frontend_src_dir}}/.env.production"
-      content: |
-       VITE_APP_BACKEND_URL=/api
-      owner: "{{app_user}}"
-      group: "{{app_group}}"
-      mode: '0644'
-      tags: [configuration,frontend]
+    dest: "{{ frontend_source_dir }}/.env.production"
+    content: |
+      VITE_API_URL=/api
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0644'
+  tags: [configuration,frontend]
 
 
   # install npm dependencies
 - name: Install frontend  dependencies
-  command: npm install
+  command: npm ci
   args:
-    chdir: "{{frontend_src_dir}}"
-    environment:
-      npm_config_cache: "/home/{{app_base_dir}}/.npm"
+    chdir: "{{ frontend_source_dir }}"
+  environment:
+    npm_config_cache: "/home/{{ app_user }}/.npm"
   become: true
-  become_user: "{{app_user}}"
+  become_user: "{{ app_user }}"
   tags: [npm, frontend]
+
+- name: Build frontend application
+  command: npm run build
+  args:
+    chdir: "{{ frontend_source_dir }}"
+  become: true
+  become_user: "{{ app_user }}"
+  tags: [build, frontend]
 
  
 # Ensure the Nginx root directory exists
@@ -131,10 +139,21 @@
   notify: Restart nginx
   tags: [nginx, permissions, frontend]
 
+- name: Copy frontend build to Nginx root
+  copy:
+    src: "{{ frontend_build_dir }}/"
+    dest: "{{ frontend_nginx_root }}/"
+    owner: www-data
+    group: www-data
+    mode: preserve
+    remote_src: true
+  notify: Restart nginx
+  tags: [deploy, frontend]
+
 # Create nginx configuration for the frontend application
 - name: Install nginx configuration for frontend application
   template:
-    src: taskapp_nginx_.conf.j2
+    src: taskapp-nginx.conf.j2
     dest: /etc/nginx/sites-available/taskapp
     owner: root
     group: root
@@ -215,4 +234,3 @@
 
 
    
-

@@ -19,8 +19,9 @@ frontend_branch: main
 
 frontend_source_dir: "{{app_base_dir}}/frontend"
 
-frontend_build_dir: "{{frontend_src_dir}}/dist"
+frontend_src_dir: "{{ frontend_source_dir }}"
+
+frontend_build_dir: "{{ frontend_source_dir }}/dist"
 
 frontend_nginx_root: /var/www/taskapp
-
 
