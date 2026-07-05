@@ -8,6 +8,7 @@ resources:
   - postgres.yaml
   - backend.yaml
   - frontend.yaml
+  - clusterissuer.yaml
   - ingress.yaml
   - networkpolicy.yaml
 images:

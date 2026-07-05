@@ -13,9 +13,12 @@ spec:
       labels:
         app: taskapp-frontend
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-10-10-8
       containers:
         - name: frontend
           image: ghcr.io/lasglowtech/taskapp-frontend:0.1.0
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           readinessProbe:

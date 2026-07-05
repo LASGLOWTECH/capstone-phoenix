@@ -3,8 +3,15 @@ kind: Ingress
 metadata:
   name: taskapp-ingress
   namespace: taskapp
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - taskapp.euclaseresources.com
+        - api.euclaseresources.com
+      secretName: taskapp-tls
   rules:
     - host: taskapp.euclaseresources.com
       http:
