@@ -1,0 +1,23 @@
+---
+- name: Prepare all nodes
+  hosts: all
+  become: true
+  vars:
+    docker_users:
+      - "{{ ansible_user }}"
+  roles:
+    - common
+    - docker
+
+- name: Bootstrap k3s control plane
+  hosts: control_plane
+  become: true
+  roles:
+    - k3s-server
+
+- name: Join k3s workers
+  hosts: workers
+  become: true
+  roles:
+    - k3s-agent
+

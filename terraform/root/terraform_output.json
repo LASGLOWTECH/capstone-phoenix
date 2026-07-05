@@ -1,0 +1,79 @@
+{
+  "control_plane_public_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "98.80.206.30"
+  },
+  "node_private_ips": {
+    "sensitive": false,
+    "type": [
+      "tuple",
+      [
+        "string",
+        "string",
+        "string"
+      ]
+    ],
+    "value": [
+      "10.10.10.8",
+      "10.10.11.4",
+      "10.10.12.11"
+    ]
+  },
+  "node_public_ips": {
+    "sensitive": false,
+    "type": [
+      "tuple",
+      [
+        "string",
+        "string",
+        "string"
+      ]
+    ],
+    "value": [
+      "98.80.206.30",
+      "18.208.154.92",
+      "54.146.218.117"
+    ]
+  },
+  "public_subnet_ids": {
+    "sensitive": false,
+    "type": [
+      "tuple",
+      [
+        "string",
+        "string",
+        "string"
+      ]
+    ],
+    "value": [
+      "subnet-00fc94d994eb35b34",
+      "subnet-0ab5e34112b1e0478",
+      "subnet-0983a4efee5267366"
+    ]
+  },
+  "vpc_cidr_block": {
+    "sensitive": false,
+    "type": "string",
+    "value": "10.10.0.0/16"
+  },
+  "vpc_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpc-02929c900c1f48902"
+  },
+  "worker_public_ips": {
+    "sensitive": false,
+    "type": [
+      "tuple",
+      [
+        "string",
+        "string"
+      ]
+    ],
+    "value": [
+      "18.208.154.92",
+      "54.146.218.117"
+    ]
+  }
+}

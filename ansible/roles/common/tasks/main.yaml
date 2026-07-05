@@ -1,0 +1,44 @@
+- name: Update apt cache
+  apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install base packages
+  apt:
+    name:
+      - curl
+      - ca-certificates
+      - gnupg
+      - software-properties-common
+      - ufw
+      - jq
+    state: present
+
+- name: Allow OpenSSH
+  ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: Allow HTTP and HTTPS ingress
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - "80"
+    - "443"
+
+- name: Allow k3s API, kubelet, and flannel traffic
+  ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.proto }}"
+  loop:
+    - { port: "6443", proto: tcp }
+    - { port: "10250", proto: tcp }
+    - { port: "8472", proto: udp }
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: deny

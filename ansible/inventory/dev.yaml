@@ -1,0 +1,19 @@
+all:
+  vars:
+    ansible_user: ubuntu
+    ansible_ssh_private_key_file: ~/.ssh/task-app
+    ansible_python_interpreter: /usr/bin/python3
+    k3s_version: v1.30.3+k3s1
+    k3s_server_url: https://{{ hostvars['control-plane-1'].ansible_host }}:6443
+  children:
+    control_plane:
+      hosts:
+        control-plane-1:
+          ansible_host: 98.80.206.30
+    workers:
+      hosts:
+        worker-1:
+          ansible_host: 18.208.154.92
+        worker-2:
+          ansible_host: 54.146.218.117
+ 

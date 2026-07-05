@@ -1,0 +1,7 @@
+# Restart a service
+- name: Restart application service
+  service:
+    name: "myapp"
+    state: restarted
+  tags: [handlers]
+  

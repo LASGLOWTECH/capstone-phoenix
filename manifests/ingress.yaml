@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: taskapp-ingress
+  namespace: taskapp
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: taskapp.euclaseresources.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: taskapp-frontend
+                port:
+                  number: 80
+    - host: api.euclaseresources.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: taskapp-backend
+                port:
+                  number: 5000

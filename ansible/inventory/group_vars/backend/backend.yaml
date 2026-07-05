@@ -1,0 +1,32 @@
+# runtime
+backend_runtime: python3
+
+# listen port for the backend application
+backend_listen_port: 5000
+
+# backend application directory
+
+backend_app_dir: "{{app_base_dir}}/backend"
+
+# backend virtual environment directory
+backend_venv_dir: "{{backend_app_dir}}/venv"
+
+# packages required for the backend application to run.
+backend_runtime_packages:
+  - python3
+  - python3-pip
+  - python3-venv
+  - postgresql-client
+
+db_name: taskapp
+db_user: taskapp_user
+db_port: 5432
+
+db_host: "{{terraform_output.db_endpoint.value}}"
+db_password: "{{vault_db_password}}"  
+backend_repo_url: "https://github.com/LASGLOWTECH/taskapp-backend.git"
+backend_branch: main
+
+backend_gunicorn_workers: 3
+# backend bind address for gunicorn to listen on."0.0.0.0:5000"
+backend_bind_address: "0.0.0.0:5000" 

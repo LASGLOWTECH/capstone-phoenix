@@ -1,0 +1,4 @@
+# Fall back variables for the common role
+app_user: taskapp
+app_group: taskapp    #group for the application
+app_base_dir: /opt/taskapp #base directory for the application

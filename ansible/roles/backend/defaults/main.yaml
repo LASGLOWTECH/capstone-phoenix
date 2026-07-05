@@ -1,0 +1,21 @@
+
+backend_runtime: python3
+backend_port: 5000
+backend_app_dir: /opt/taskapp/backend
+backend_venv_dir: /opt/taskapp/backend/venv
+ 
+backend_runtime_packages:
+  - python3
+  - python3-venv
+  - python3-pip
+  - postgresql-client
+ 
+db_name: taskapp
+db_user: taskapp_user
+db_port: 5432
+
+backend_repo_url: ""
+backend_branch: main
+backend_gunicorn_workers: 2
+backend_bind_address: 0.0.0.0:5000
+ 

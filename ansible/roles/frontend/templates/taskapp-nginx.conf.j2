@@ -1,0 +1,25 @@
+server {
+    listen {{ frontend_listen_port }};
+    server_name _;
+
+    root {{ frontend_nginx_root }};
+    index index.html;
+
+
+location / {
+    try_files $uri /index.html;
+}
+
+location /api/ {
+    proxy_pass http://{{ terraform_output.backend_private_ip.value}}:5000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    
+}   
+
+location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
+
+}

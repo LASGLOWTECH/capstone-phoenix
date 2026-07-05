@@ -1,0 +1,130 @@
+
+# tasks file for roles/backend
+- name: Install backend runtime
+  apt:
+    name: "{{ backend_runtime_packages }}"
+    state: present
+
+- name: Create backend application directory
+  file:
+    path: "{{ backend_app_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0755"
+
+- name: Check if backend repo already cloned
+  stat:
+    path: "{{ backend_app_dir }}/.git"
+  register: repo_git_dir
+  become_user: "{{ app_user }}"
+
+- name: Clone backend repository (only if not present)
+  git:
+    repo: "{{ backend_repo_url }}"
+    dest: "{{ backend_app_dir }}"
+    version: "{{ backend_branch }}"
+    clone: yes
+    update: no   # don't pull yet
+  become_user: "{{ app_user }}"
+  when: not repo_git_dir.stat.exists
+
+- name: Update backend repository (pull if already cloned)
+  git:
+    repo: "{{ backend_repo_url }}"
+    dest: "{{ backend_app_dir }}"
+    version: "{{ backend_branch }}"
+    update: yes
+    force: yes   # if you want to overwrite local changes
+  become_user: "{{ app_user }}"
+  when: repo_git_dir.stat.exists
+
+- name: Create Python virtual environment
+  command: python3 -m venv {{ backend_venv_dir }}
+  args:
+    creates: "{{ backend_venv_dir }}/bin/activate"
+  become_user: "{{ app_user }}"
+
+- name: Create backend environment file
+  copy:
+    dest: "{{ backend_app_dir }}/.env"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0600"
+    content: |
+      DATABASE_HOST={{ terraform_output.db_endpoint.value | split(':') | first }}
+      DATABASE_PORT={{ terraform_output.db_endpoint.value | split(':') | last | default('5432') }}
+      DATABASE_NAME={{ db_name }}
+      DATABASE_USER={{ db_user }}
+      DATABASE_PASSWORD={{ db_password }}
+      FLASK_ENV=development
+      FLASK_DEBUG=1
+      SECRET_KEY=hioJTg56FGDYGujoudnGT+$3k1shb!!
+
+- name: Check if tasks table exists (using psql)
+  become_user: "{{ app_user }}"
+  environment:
+    PGPASSWORD: "{{ db_password }}"
+  shell: |
+    psql -h {{ terraform_output.db_endpoint.value | split(':') | first }} \
+         -p {{ terraform_output.db_endpoint.value | split(':') | last | default('5432') }} \
+         -U {{ db_user }} \
+         -d {{ db_name }} \
+         -t -c "SELECT to_regclass('public.tasks');"
+  register: table_check
+  changed_when: false
+  failed_when: false
+
+
+
+- name: Check number of tasks if table exists
+  become_user: "{{ app_user }}"
+  environment:
+    PGPASSWORD: "{{ db_password }}"
+  shell: |
+    psql -h {{ terraform_output.db_endpoint.value | split(':') | first }} \
+         -p {{ terraform_output.db_endpoint.value | split(':') | last | default('5432') }} \
+         -U {{ db_user }} \
+         -d {{ db_name }} \
+         -t -c "SELECT COUNT(*) FROM tasks;"
+  register: task_count
+  changed_when: false
+  failed_when: false
+  when: table_check.stdout.strip() != "" and table_check.stdout.strip() != "NULL"
+
+- name: Apply database schema if table missing or empty
+  become_user: "{{ app_user }}"
+  environment:
+    PGPASSWORD: "{{ db_password }}"
+  command: |
+    psql -h {{ terraform_output.db_endpoint.value | split(':') | first }} \
+         -p {{ terraform_output.db_endpoint.value | split(':') | last | default('5432') }} \
+         -U {{ db_user }} \
+         -d {{ db_name }} \
+         -f {{ backend_app_dir }}/schema.sql
+  when: >
+    table_check.stdout.strip() in ["", "NULL"] or
+    (task_count.stdout.strip() is defined and task_count.stdout.strip() == "0")
+
+
+- name: Install backend Python requirements
+  pip:
+    requirements: "{{ backend_app_dir }}/requirements.txt"
+    virtualenv: "{{ backend_venv_dir }}"
+    virtualenv_python: python3
+ 
+- name: Install backend systemd unit
+  template:
+    src: taskapp-backend.service.j2
+    dest: /etc/systemd/system/taskapp-backend.service
+    mode: "0644"
+ 
+- name: Reload systemd
+  systemd:
+    daemon_reload: true
+ 
+- name: Enable and start backend service
+  systemd:
+    name: taskapp-backend
+    enabled: true
+    state: started

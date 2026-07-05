@@ -1,0 +1,34 @@
+name: cd
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  sync-gitops:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update image tags in manifests
+        env:
+          IMAGE_TAG: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          sed -i "/name: ghcr.io\/lasglowtech\/taskapp-backend/{n;s|newTag:.*|newTag: ${IMAGE_TAG}|;}" manifests/kustomization.yaml
+          sed -i "/name: ghcr.io\/lasglowtech\/taskapp-frontend/{n;s|newTag:.*|newTag: ${IMAGE_TAG}|;}" manifests/kustomization.yaml
+
+      - name: Commit and push manifests update
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add manifests/kustomization.yaml
+          git diff --cached --quiet || git commit -m "chore: update image tags"
+          git push

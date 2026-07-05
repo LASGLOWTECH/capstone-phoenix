@@ -1,0 +1,17 @@
+- name: Download k3s install script
+  get_url:
+    url: https://get.k3s.io
+    dest: /usr/local/bin/install-k3s.sh
+    mode: '0755'
+
+- name: Join worker to control plane
+  shell: |
+    /usr/local/bin/install-k3s.sh agent --server https://{{ hostvars['control-plane-1'].ansible_host }}:6443 --token {{ hostvars['control-plane-1']['k3s_token_value'] }}
+  environment:
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+
+- name: Wait for k3s agent service to be active
+  systemd:
+    name: k3s-agent
+    state: started
+    enabled: true
