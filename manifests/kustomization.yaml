@@ -12,6 +12,6 @@ resources:
   - networkpolicy.yaml
 images:
   - name: ghcr.io/lasglowtech/taskapp-backend
-    newTag: 0.1.0
+    newTag: b9ad734f13b9624aac9e365f2b8d13a6d4ed50d9
   - name: ghcr.io/lasglowtech/taskapp-frontend
-    newTag: 0.1.0
+    newTag: b9ad734f13b9624aac9e365f2b8d13a6d4ed50d9
