@@ -35,22 +35,19 @@ variable "db_instance_class" {
 variable "db_name" {
   description = "database name"
   type        = string
-  default     =task-app
-
+  default     = "task-app"
 }
 
 variable "db_username" {
   description = "database user name"
   type        = string
-  default     =task-app_admin
-
+  default     = "task-app_admin"
 }
-
 
 variable "db_engine_version" {
   description = "The database engine to use (e.g., mysql, postgres)."
   type        = string
-  default     = "18.3-R1"
+  default     = "18.3"
 }
 
 
@@ -66,12 +63,6 @@ variable "db_allocated_storage" {
   default     = 20
 }
 
-
-variable "db_backup_retention_period" {
-  description = "The number of days to retain backups for the RDS database."
-  type        = number
-  default     = 1
-}
 
 variable "db_multi_az" {
   description = "Whether to create a Multi-AZ RDS database instance."
@@ -95,7 +86,7 @@ variable "skip_final_snapshot" {
 variable "backup_retention_period" {
   description = "The number of days to retain backups for the RDS database."
   type        = number
-  default     = 7
+  default     = 1
 }
 
 variable "max_allocated_storage" {
@@ -103,3 +94,5 @@ variable "max_allocated_storage" {
   type        = number
   default     = 100
 }
+
+

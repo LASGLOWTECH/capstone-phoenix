@@ -137,3 +137,65 @@ resource "aws_instance" "k3s_nodes" {
   }
 }
 
+resource "aws_subnet" "private" {
+  count             = 3
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index + 20)
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-private-${count.index + 1}"
+  }
+}
+
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-private-rt"
+  }
+}
+
+resource "aws_route_table_association" "private" {
+  count          = length(aws_subnet.private)
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_security_group" "database" {
+  name        = "${var.project_name}-${var.environment}-database"
+  description = "Allow Postgres access from k3s nodes only"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description     = "Postgres from k3s nodes"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.nodes.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-database-sg"
+  }
+}
+
+module "rds" {
+  source = "../modules/rds"
+
+  project_name = var.project_name
+  environment  = var.environment
+  vpc_id       = aws_vpc.main.id
+
+  private_subnet_ids          = aws_subnet.private[*].id
+  database_security_group_id  = [aws_security_group.database.id]
+
+  db_password = var.db_password
+}

@@ -6,14 +6,13 @@ all:
     k3s_version: v1.30.3+k3s1
     k3s_server_url: https://{{ hostvars['control-plane-1'].ansible_host }}:6443
   children:
-    control_plane:
+    frontend:
       hosts:
-        control-plane-1:
+       frontend-dev:
           ansible_host: 98.80.206.30
-    workers:
+    backend-dev:
       hosts:
-        worker-1:
+       backend-dev:
           ansible_host: 18.208.154.92
-        worker-2:
-          ansible_host: 54.146.218.117
+       
  

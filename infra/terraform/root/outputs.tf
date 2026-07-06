@@ -32,3 +32,11 @@ output "node_private_ips" {
   description = "Private IPs of all k3s nodes."
   value       = aws_instance.k3s_nodes[*].private_ip
 }
+
+output "db_endpoint" {
+  value = module.rds.endpoint
+}
+
+output "db_port" {
+  value = module.rds.port
+}
