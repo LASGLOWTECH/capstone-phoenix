@@ -1,36 +1,41 @@
-# install frontend packages
-- name: install frontend packages
+# tasks file for roles/frontend
+- name: Create application group
+  group:
+    name: "{{ app_group }}"
+    system: yes
+    state: present
+
+- name: Create application user
+  user:
+    name: "{{ app_user }}"
+    group: "{{ app_group }}"
+    system: yes
+    shell: /bin/bash
+    home: "/home/{{ app_user }}"
+    create_home: yes
+
+- name: Install frontend packages
   apt:
     name: "{{ frontend_packages }}"
     state: present
-  tags: [packages, frontend]  
 
-- name: ensure web server is installed and running
+- name: Ensure web server is installed and running
   systemd:
     name: nginx
     state: started
     enabled: yes
-  tags: [services,frontend]
 
-  # Add nodesource repository for Node.js
 - name: Add NodeSource repository for Node.js
   shell: |
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
   args:
     executable: /bin/bash
-  tags: [nodejs, frontend]
 
- 
-# Install Node.js and npm
 - name: Install Node.js and npm
   apt:
     name: nodejs
     state: present
-  tags: [nodejs, frontend]
 
-
-
-  # create appliation home directory
 - name: Create application home directory
   file:
     path: "/home/{{ app_user }}"
@@ -38,9 +43,7 @@
     owner: "{{ app_user }}"
     group: "{{ app_group }}"
     mode: '0755'
-  tags: [directories,frontend]
 
-# create the npm cache directory for the application and set permission
 - name: Create npm cache directory
   file:
     path: "/home/{{ app_user }}/.npm"
@@ -48,21 +51,16 @@
     owner: "{{ app_user }}"
     group: "{{ app_group }}"
     mode: '0755'
-  tags: [directories,frontend]
 
-  # clone the  frontend application repository
-- name: clone frontend application repository
-  git: 
+- name: Clone frontend application repository
+  git:
     repo: "{{ frontend_repo_url }}"
     dest: "{{ frontend_source_dir }}"
     version: "{{ frontend_branch }}"
     force: yes
   become_user: "{{ app_user }}"
-  become: true
-  tags: [git,deploy,frontend]
 
-# create .env.production for the frontend
-- name: create .env.production for the frontend
+- name: Create .env.production for the frontend
   copy:
     dest: "{{ frontend_source_dir }}/.env.production"
     content: |
@@ -70,48 +68,35 @@
     owner: "{{ app_user }}"
     group: "{{ app_group }}"
     mode: '0644'
-  tags: [configuration,frontend]
 
-
-  # install npm dependencies
-- name: Install frontend  dependencies
+- name: Install frontend dependencies
   command: npm ci
   args:
     chdir: "{{ frontend_source_dir }}"
   environment:
     npm_config_cache: "/home/{{ app_user }}/.npm"
-  become: true
   become_user: "{{ app_user }}"
-  tags: [npm, frontend]
 
 - name: Build frontend application
   command: npm run build
   args:
     chdir: "{{ frontend_source_dir }}"
-  become: true
   become_user: "{{ app_user }}"
-  tags: [build, frontend]
 
- 
-# Ensure the Nginx root directory exists
-- name: Ensure Nginx root directory exists
+- name: Ensure the Nginx root directory exists
   file:
     path: "{{ frontend_nginx_root }}"
     state: directory
     owner: www-data
     group: www-data
     mode: '0755'
-  tags: [directories, frontend]
- 
-# Clean previous build artifacts from the Nginx root directory
-- name: Clean previous frontend build artifacts from Nginx root directory
+
+- name: Clean previous build artifacts from the Nginx root directory
   file:
     path: "{{ frontend_nginx_root }}"
     state: absent
   notify: Restart nginx
-  tags: [nginx, deploy, frontend] 
-   
-# Recreate the Nginx root directory after cleaning
+
 - name: Recreate the Nginx root directory after cleaning
   file:
     path: "{{ frontend_nginx_root }}"
@@ -120,9 +105,7 @@
     group: www-data
     mode: '0755'
   notify: Restart nginx
-  tags: [nginx, deploy, frontend]
- 
-# Ensure nginx directories have correct permissions
+
 - name: Ensure nginx directories have correct permissions
   file:
     path: "{{ frontend_nginx_root }}"
@@ -130,14 +113,11 @@
     mode: '0755'
     recurse: yes
   notify: Restart nginx
-  tags: [nginx, permissions, frontend]
- 
-# Ensure files are readable by nginx
+
 - name: Ensure frontend build files are readable by nginx
   command: find {{ frontend_build_dir }} -type f -exec chmod 644 {} \;
   changed_when: false
   notify: Restart nginx
-  tags: [nginx, permissions, frontend]
 
 - name: Copy frontend build to Nginx root
   copy:
@@ -148,9 +128,7 @@
     mode: preserve
     remote_src: true
   notify: Restart nginx
-  tags: [deploy, frontend]
 
-# Create nginx configuration for the frontend application
 - name: Install nginx configuration for frontend application
   template:
     src: taskapp-nginx.conf.j2
@@ -159,78 +137,21 @@
     group: root
     mode: '0644'
   notify: Restart nginx
-  tags: [nginx, configuration, frontend]
 
-
-# Remove default nginx configuration
 - name: Remove default nginx configuration
   file:
     path: /etc/nginx/sites-enabled/default
     state: absent
   notify: Restart nginx
-  tags: [nginx, configuration, frontend]
- 
-# Enable nginx configuration for frontend application
+
 - name: Enable nginx configuration for frontend application
   file:
     src: /etc/nginx/sites-available/taskapp
     dest: /etc/nginx/sites-enabled/taskapp
     force: yes
   notify: Restart nginx
-  tags: [nginx, configuration, frontend]
- 
-# Validate nginx configuration
+
 - name: Validate nginx configuration
   command: nginx -t
   changed_when: false
   notify: Restart nginx
-  tags: [nginx, configuration, frontend]
- 
-
-
-
-
-#   # build the frontend application
-# - name: Build frontend application
-#   shell: |
-#     npm run build
-#   args:
-#     chdir: "{{frontend_source_dir}}"
-#     executable: /bin/bash
-#   become: true
-#   become_user: "{{app_user}}"
-#   tags: [build, frontend]
-
-
-
-# - name: Copy frontend build to nginx root
-#   shell: |
-#     cp -r {{frontend_build_dir}}/* {{frontend_nginx_root}}/
-#   become: true
-#   tags: [deploy, frontend]
-
-#   # configure nginx for frontend
-# - name: Configure nginx for frontend
-#   template:
-#     src: nginx.conf.j2
-#     dest: /etc/nginx/sites-available/default
-#     owner: root
-#     group: root
-#     mode: '0644'
-#   notify: restart nginx
-#   tags: [nginx, frontend]
-
-#   # enable nginx to start on boot
-# - name: Enable and start nginx
-#   systemd:
-#     name: nginx
-#     state: started
-#     enabled: true
-#   tags: [services, frontend]
-#   tags: [git, deploy,frontend]  
-
-    
-
-
-
-   

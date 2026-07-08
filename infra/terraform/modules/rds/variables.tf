@@ -35,13 +35,13 @@ variable "db_instance_class" {
 variable "db_name" {
   description = "database name"
   type        = string
-  default     = "task-app"
+  default     = "taskapp"
 }
 
 variable "db_username" {
   description = "database user name"
   type        = string
-  default     = "task-app_admin"
+  default     = "taskapp_admin"
 }
 
 variable "db_engine_version" {

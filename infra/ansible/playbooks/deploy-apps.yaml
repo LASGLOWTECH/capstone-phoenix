@@ -1,0 +1,12 @@
+---
+- name: Deploy backend application to worker nodes
+  hosts: workers
+  become: true
+  roles:
+    - backend
+
+- name: Deploy frontend application to worker nodes  
+  hosts: workers
+  become: true
+  roles:
+    - frontend

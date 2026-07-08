@@ -3,16 +3,23 @@ all:
     ansible_user: ubuntu
     ansible_ssh_private_key_file: ~/.ssh/task-app
     ansible_python_interpreter: /usr/bin/python3
+    ansible_become: true
+    ansible_become_method: sudo
     k3s_version: v1.30.3+k3s1
-    k3s_server_url: https://{{ hostvars['control-plane-1'].ansible_host }}:6443
+    k3s_server_url: "https://{{ hostvars['control-plane-1'].private_ip }}:6443"
+
   children:
-    frontend:
+    control_plane:
       hosts:
-       frontend-dev:
-          ansible_host: 98.80.206.30
-    backend-dev:
+        control-plane-1:
+          ansible_host: 18.204.245.24
+          private_ip: 10.10.10.99
+
+    workers:
       hosts:
-       backend-dev:
-          ansible_host: 18.208.154.92
-       
- 
+        worker-1:
+          ansible_host: 54.157.63.127
+          private_ip: 10.10.11.240
+        worker-2:
+          ansible_host: 54.210.122.206
+          private_ip: 10.10.12.135

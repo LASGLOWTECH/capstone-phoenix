@@ -1,27 +1,11 @@
-# web server packages to be installed on the frontend server.
-
-web_server_packages: nginx
-
-#  port for the frontend server to listen on.
-frontend_listen_port: 80
-
-# frontend server directory to serve the application from.
-frontend_app_dir: "{{app_base_dir}}/frontend"
-
-frontend_packages:
-  - nginx
-  # - nodejs
-  # - npm
-
-frontend_repo_url: "https://github.com/LASGLOWTECH/taskapp-frontend.git"
-  
+frontend_app_dir: '{{app_base_dir}}/frontend'
 frontend_branch: main
-
-frontend_source_dir: "{{app_base_dir}}/frontend"
-
-frontend_src_dir: "{{ frontend_source_dir }}"
-
-frontend_build_dir: "{{ frontend_source_dir }}/dist"
-
+frontend_build_dir: '{{ frontend_source_dir }}/dist'
+frontend_listen_port: 80
 frontend_nginx_root: /var/www/taskapp
-
+frontend_packages:
+- nginx
+frontend_repo_url: https://github.com/LASGLOWTECH/taskapp-frontend
+frontend_source_dir: '{{app_base_dir}}/frontend'
+frontend_src_dir: '{{ frontend_source_dir }}'
+web_server_packages: nginx

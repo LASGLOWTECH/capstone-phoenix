@@ -1,17 +1,15 @@
-
 # packages required for front and backend.
 
 common_packages:
-  
   - wget
   - curl
   - git
-   -ca-certificate
-   -acl
-   -gnupg 
-   -python3-pip
-   -python3-venv
+  - ca-certificates
+  - acl
+  - gnupg 
+  - python3-pip
+  - python3-venv
 
 app_user: taskapp
-app_group: taskapp    #group for the application
-app_base_dir: /opt/taskapp #base directory for the application
+app_group: taskapp
+app_base_dir: /opt/taskapp

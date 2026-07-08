@@ -2,7 +2,17 @@
   "control_plane_public_ip": {
     "sensitive": false,
     "type": "string",
-    "value": "98.80.206.30"
+    "value": "18.204.245.24"
+  },
+  "db_endpoint": {
+    "sensitive": false,
+    "type": "string",
+    "value": "taskapp-dev-db.cg7auciogyzi.us-east-1.rds.amazonaws.com:5432"
+  },
+  "db_port": {
+    "sensitive": false,
+    "type": "number",
+    "value": 5432
   },
   "node_private_ips": {
     "sensitive": false,
@@ -15,9 +25,9 @@
       ]
     ],
     "value": [
-      "10.10.10.8",
-      "10.10.11.4",
-      "10.10.12.11"
+      "10.10.10.99",
+      "10.10.11.240",
+      "10.10.12.135"
     ]
   },
   "node_public_ips": {
@@ -31,9 +41,9 @@
       ]
     ],
     "value": [
-      "98.80.206.30",
-      "18.208.154.92",
-      "54.146.218.117"
+      "18.204.245.24",
+      "54.157.63.127",
+      "54.210.122.206"
     ]
   },
   "public_subnet_ids": {
@@ -47,9 +57,9 @@
       ]
     ],
     "value": [
-      "subnet-00fc94d994eb35b34",
-      "subnet-0ab5e34112b1e0478",
-      "subnet-0983a4efee5267366"
+      "subnet-02794289850c2ec38",
+      "subnet-0ef71389a449a1c67",
+      "subnet-0855fa49e96ecb3a0"
     ]
   },
   "vpc_cidr_block": {
@@ -60,7 +70,7 @@
   "vpc_id": {
     "sensitive": false,
     "type": "string",
-    "value": "vpc-02929c900c1f48902"
+    "value": "vpc-08a4cef305b1f4b14"
   },
   "worker_public_ips": {
     "sensitive": false,
@@ -72,8 +82,13 @@
       ]
     ],
     "value": [
-      "18.208.154.92",
-      "54.146.218.117"
+      "54.157.63.127",
+      "54.210.122.206"
     ]
+  },
+  "backend_private_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "10.10.10.99"
   }
 }
