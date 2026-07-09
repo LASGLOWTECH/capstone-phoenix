@@ -4,23 +4,26 @@ metadata:
   name: taskapp-ingress
   namespace: taskapp
   annotations:
+    
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - taskapp.euclaseresources.com
+        - myapp.api.euclaseresources.com
+      secretName: taskapp-frontend-tls
+    - hosts:
         - api.euclaseresources.com
-      secretName: taskapp-tls
+      secretName: taskapp-backend-tls
   rules:
-    - host: taskapp.euclaseresources.com
+    - host: myapp.api.euclaseresources.com
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: taskapp-frontend
+                name: frontend
                 port:
                   number: 80
     - host: api.euclaseresources.com
@@ -30,6 +33,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: taskapp-backend
+                name: backend
                 port:
                   number: 5000

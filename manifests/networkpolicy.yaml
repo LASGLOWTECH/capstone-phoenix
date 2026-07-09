@@ -1,69 +1,40 @@
+
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: default-deny
+  name: default-deny-all
   namespace: taskapp
 spec:
   podSelector: {}
   policyTypes:
     - Ingress
+    - Egress
+
 ---
+# 2. Every Pod needs DNS to function at all.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-postgres-from-backend
+  name: allow-dns-egress
   namespace: taskapp
 spec:
-  podSelector:
-    matchLabels:
-      app: postgres
+  podSelector: {}
   policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - podSelector:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
             matchLabels:
-              app: taskapp-backend
+              kubernetes.io/metadata.name: kube-system
       ports:
+        - protocol: UDP
+          port: 53
         - protocol: TCP
-          port: 5432
+          port: 53
+
 ---
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-ingress-to-backend
-  namespace: taskapp
-spec:
-  podSelector:
-    matchLabels:
-      app: taskapp-backend
-  policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - namespaceSelector: {}
-      ports:
-        - protocol: TCP
-          port: 5000
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-ingress-to-acme-http-solver
-  namespace: taskapp
-spec:
-  podSelector:
-    matchLabels:
-      acme.cert-manager.io/http01-solver: "true"
-  policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - namespaceSelector: {}
-      ports:
-        - protocol: TCP
-          port: 8089
----
+# 3. Only Traefik (k3s's bundled ingress, running in kube-system) may reach
+#    the frontend Pods — nothing else in the cluster needs to.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -77,7 +48,62 @@ spec:
     - Ingress
   ingress:
     - from:
-        - namespaceSelector: {}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
       ports:
         - protocol: TCP
-          port: 80
+          port: 8080
+
+-
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-backend
+  namespace: taskapp
+spec:
+  podSelector:
+    matchLabels:
+      app: taskapp-backend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: TCP
+          port: 5000
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-to-database
+  namespace: taskapp
+spec:
+  podSelector:
+    matchLabels:
+      app: taskapp-backend
+  policyTypes:
+    - Egress
+  egress:
+ 
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+   
+    - to:
+        - ipBlock:
+            cidr: 10.10.0.0/16
+      ports:
+        - protocol: TCP
+          port: 5432
+
+.

@@ -2,19 +2,19 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: taskapp
 resources:
-- namespace.yaml
-- configmap.yaml
-- secret.example.yaml
-- postgres.yaml
-- backend.yaml
-- frontend.yaml
-- clusterissuer.yaml
-- ingress.yaml
-- networkpolicy.yaml
-images:
-- name: ghcr.io/lasglowtech/taskapp-backend
-  newName: ghcr.io/lasglowtech/taskapp-backend
-  newTag: 8aef1691ab8b4c1137ab664d6a115ec672788d13
-- name: ghcr.io/lasglowtech/taskapp-frontend
-  newName: ghcr.io/lasglowtech/taskapp-frontend
-  newTag: 8aef1691ab8b4c1137ab664d6a115ec672788d13
+  namespace.yaml
+  backend-configmap.yaml
+ 
+  - postgres-service.yaml
+  - postgres-statefulset.yaml
+  - migration-job.yaml
+  - backend-deployment.yaml
+  - backend-service.yaml
+  - backend-hpa.yaml
+  - backend-pdb.yaml
+  - frontend-deployment.yaml
+  - frontend-service.yaml
+  - frontend-pdb.yaml
+  - networkpolicy.yaml
+  - ingress.yaml
+  - clusterissuer.yaml

@@ -2,7 +2,7 @@
 
 Capstone project for the completion of Phoenix's DevOps Engineering course, by **austinoasaz**.
 
-🔗 **Live app:** [http://myapp.api.euclaseresources.com/](http://myapp.api.euclaseresources.com/)
+🔗 **Live app:** http://myapp.api.euclaseresources.com/
 
 ---
 
